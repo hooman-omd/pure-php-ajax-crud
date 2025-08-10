@@ -17,9 +17,10 @@
         <h1 class="text-center">Notes CRUD</h1>
         <div class="my-4 p-4 border rounded">
             <div class="row">
+                <input type="hidden" name="note_id" id="note_id">
                 <div class="col-lg-4 my-2"><input class="form-control" type="text" id="title" placeholder="title"></div>
                 <div class="col-lg-4 my-2"><input class="form-control" type="text" id="description" placeholder="description"></div>
-                <div class="col-lg-4 my-2"><button class="btn btn-primary" id="insertBtn">Add new note</button></div>
+                <div class="col-lg-4 my-2"><button class="btn btn-primary" id="insertBtn">Save note</button></div>
             </div>
         </div>
         <table class="table mt-4 text-center">
@@ -58,7 +59,7 @@
                             <td class="py-2">${data.description}</td>
                             <td class="py-2">${data.created_at}</td>
                             <td class="py-2">${data.updated_at}</td>
-                            <td class="py-2"><button class="btn btn-primary me-3 d-inline-block">update</button><button class="btn btn-danger d-inline-block deleteBtn" data-noteid="${data.id}">delete</button></td>
+                            <td class="py-2"><button class="btn btn-primary me-3 d-inline-block updateBtn" data-noteid="${data.id}" data-title="${data.title}" data-description="${data.description}">update</button><button class="btn btn-danger d-inline-block deleteBtn" data-noteid="${data.id}">delete</button></td>
                         </tr>
                         `;
                         $('table tbody').append(row);
@@ -76,11 +77,13 @@
                     method: 'post',
                     data: {
                         'operation': 'insert',
+                        'id': $('#note_id').val(),
                         'title': $('#title').val(),
                         'description': $('#description').val()
                     },
                     success: function(result) {
                         console.log('insertion done');
+                        $('#note_id').val('');
                         $('#title').val('');
                         $('#description').val('');
                         loadData();
@@ -106,6 +109,12 @@
                         }
                     });
                 }
+            });
+
+            $(document).on('click', '.updateBtn', function(){
+                $('#note_id').val($(this).data('noteid'));
+                $('#title').val($(this).data('title'));
+                $('#description').val($(this).data('description'));
             });
 
             // $('.deleteBtn').click(function() {
