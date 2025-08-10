@@ -24,6 +24,11 @@ function update() {
     $db->updateNote($_POST['id'],$_POST['title'],$_POST['description']);
 }
 
+function search(){
+    global $db;
+    return json_encode($db->searchNotes($_GET["searchTerm"]));
+}
+
 
 if(isset($_GET['operation']) && $_GET['operation']=='findAll'){
     echo index();
@@ -31,4 +36,6 @@ if(isset($_GET['operation']) && $_GET['operation']=='findAll'){
     empty($_POST['id']) ? save() : update();
 }elseif(isset($_POST['operation']) && $_POST['operation']=='delete'){
     delete();
+}elseif(isset($_GET['operation']) && $_GET['operation']=='find'){
+    echo search();
 }

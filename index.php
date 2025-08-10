@@ -14,13 +14,21 @@
 
 <body>
     <div class="container">
-        <h1 class="text-center">Notes CRUD</h1>
+        <h1 class="text-center mt-4">Notes CRUD</h1>
         <div class="my-4 p-4 border rounded">
             <div class="row">
                 <input type="hidden" name="note_id" id="note_id">
                 <div class="col-lg-4 my-2"><input class="form-control" type="text" id="title" placeholder="title"></div>
                 <div class="col-lg-4 my-2"><input class="form-control" type="text" id="description" placeholder="description"></div>
                 <div class="col-lg-4 my-2"><button class="btn btn-primary" id="insertBtn">Save note</button></div>
+            </div>
+        </div>
+
+        <div class="my-4 p-4 border rounded">
+            <div class="row">
+                <div class="col-lg-4 my-2"><input class="form-control" type="text" id="search-box" placeholder="Enter your key"></div>
+                <div class="col-lg-4 my-2"><button class="btn btn-success" id="searchBtn">Search</button>
+                <button class="btn btn-warning" id="showAllBtn">Show all notes</button></div>
             </div>
         </div>
         <table class="table mt-4 text-center">
@@ -41,13 +49,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script>
-        function loadData() {
+        function loadData(operation) {
             $.ajax({
                 url: 'control.php',
                 dataType: 'json',
                 method: 'get',
                 data: {
-                    'operation': 'findAll'
+                    'operation': operation,
+                    'searchTerm' : $('#search-box').val()
                 },
                 success: function(result) {
                     $('table tbody').empty();
@@ -69,7 +78,17 @@
         }
 
         $(function() {
-            loadData();
+            loadData('findAll');
+            
+            $('#searchBtn').click(function(){
+                loadData('find');
+            });
+
+            $('#showAllBtn').click(function(){
+                loadData('findAll');
+            });
+
+            
 
             $('#insertBtn').click(function() {
                 $.ajax({
@@ -86,7 +105,7 @@
                         $('#note_id').val('');
                         $('#title').val('');
                         $('#description').val('');
-                        loadData();
+                        loadData('findAll');
                     }
                 });
             });
@@ -102,7 +121,7 @@
                         },
                         success: function(result) {
                             console.log('delete done');
-                            loadData();
+                            loadData('findAll');
                         },
                         error: function(xhr, status, error) {
                             console.error('Delete failed:', error);
