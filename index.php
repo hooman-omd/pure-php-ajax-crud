@@ -28,7 +28,8 @@
             <div class="row">
                 <div class="col-lg-4 my-2"><input class="form-control" type="text" id="search-box" placeholder="Enter your key"></div>
                 <div class="col-lg-4 my-2"><button class="btn btn-success" id="searchBtn">Search</button>
-                <button class="btn btn-warning" id="showAllBtn">Show all notes</button></div>
+                    <button class="btn btn-warning" id="showAllBtn">Show all notes</button>
+                </div>
             </div>
         </div>
         <table class="table mt-4 text-center">
@@ -44,23 +45,42 @@
             </thead>
             <tbody></tbody>
         </table>
+        
+        <div class="d-flex justify-content-center">
+            <ul class="pagination">
+            </ul>
+        </div>
+        
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script>
-        function loadData(operation) {
+        function loadData(operation,offset) {
             $.ajax({
                 url: 'control.php',
                 dataType: 'json',
                 method: 'get',
                 data: {
                     'operation': operation,
-                    'searchTerm' : $('#search-box').val()
+                    'offset': offset,
+                    'rows-per-page':4 ,
+                    'searchTerm': $('#search-box').val()
                 },
                 success: function(result) {
                     $('table tbody').empty();
-                    $.each(result, function(index, data) {
+                    let notes = result.data;
+                    let pages = result.pages;
+                    let page=``;
+                    for(let i=1;i<=pages;i++){
+                        page += `
+                            <li class="page-item ${offset == i-1 ? 'active':''}"><button class="page-link" data-page=${i-1}>${i}</button></li>
+                        `;
+                    }
+                    $('ul.pagination').empty();
+                    $('ul.pagination').append(page);
+                    
+                    $.each(notes, function(index, data) {
                         let row = `
                         <tr>
                             <td class="py-2">${data.id}</td>
@@ -71,6 +91,7 @@
                             <td class="py-2"><button class="btn btn-primary me-3 d-inline-block updateBtn" data-noteid="${data.id}" data-title="${data.title}" data-description="${data.description}">update</button><button class="btn btn-danger d-inline-block deleteBtn" data-noteid="${data.id}">delete</button></td>
                         </tr>
                         `;
+                        
                         $('table tbody').append(row);
                     });
                 }
@@ -78,17 +99,23 @@
         }
 
         $(function() {
-            loadData('findAll');
-            
-            $('#searchBtn').click(function(){
-                loadData('find');
+            loadData('findAll',0);
+
+            $(document).on('click', '.page-link', function(){
+                let operation = $('#search-box').val() == '' ? 'findAll' : 'find';
+                loadData(operation,$(this).data('page'));
             });
 
-            $('#showAllBtn').click(function(){
-                loadData('findAll');
+            $('#searchBtn').click(function() {
+                loadData('find',0);
             });
 
-            
+            $('#showAllBtn').click(function() {
+                loadData('findAll',0);
+                $('#search-box').val('');
+            });
+
+
 
             $('#insertBtn').click(function() {
                 $.ajax({
@@ -105,7 +132,7 @@
                         $('#note_id').val('');
                         $('#title').val('');
                         $('#description').val('');
-                        loadData('findAll');
+                        loadData('findAll',0);
                     }
                 });
             });
@@ -121,7 +148,7 @@
                         },
                         success: function(result) {
                             console.log('delete done');
-                            loadData('findAll');
+                            loadData('findAll',0);
                         },
                         error: function(xhr, status, error) {
                             console.error('Delete failed:', error);
@@ -130,7 +157,7 @@
                 }
             });
 
-            $(document).on('click', '.updateBtn', function(){
+            $(document).on('click', '.updateBtn', function() {
                 $('#note_id').val($(this).data('noteid'));
                 $('#title').val($(this).data('title'));
                 $('#description').val($(this).data('description'));

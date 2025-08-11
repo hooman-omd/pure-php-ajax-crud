@@ -6,7 +6,9 @@ $db=new NotesDatabase();
 
 function index(){
     global $db;
-    return json_encode($db->getAllNotes());
+    $result = $db->getAllNotes($_GET['offset'],$_GET['rows-per-page']);
+    $pages = $result['pages'];
+    return json_encode(["data"=>$result['notes'],"pages"=>$pages]);
 }
 
 function save(){
@@ -26,7 +28,9 @@ function update() {
 
 function search(){
     global $db;
-    return json_encode($db->searchNotes($_GET["searchTerm"]));
+    $result = $db->searchNotes($_GET["searchTerm"],$_GET['offset'],$_GET['rows-per-page']);
+    $pages = $result['pages'];
+    return json_encode(["data"=>$result['notes'],"pages"=>$pages]);
 }
 
 

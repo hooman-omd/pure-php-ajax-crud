@@ -22,9 +22,12 @@ class NotesDatabase {
     }
 
     
-    public function getAllNotes() {
-        $query = "SELECT * FROM notes ORDER BY id DESC";
+    public function getAllNotes(int $offset,int $rowsPerPage) {
+        $offset = $offset * $rowsPerPage;
+        $query = "SELECT * FROM notes ORDER BY id DESC limit $offset,$rowsPerPage";
+        $numRows = $this->connection->query("SELECT * FROM notes");
         $result = $this->connection->query($query);
+        $pages = ceil($numRows->num_rows / $rowsPerPage);
         
         if (!$result) {
             die("Error fetching notes: " . $this->connection->error);
@@ -35,14 +38,18 @@ class NotesDatabase {
             $notes[] = $row;
         }
         
-        return $notes;
+        return ["notes"=>$notes,"pages"=>$pages];
     }
 
     
-    public function searchNotes($searchTerm) {
+    public function searchNotes($searchTerm,int $offset,int $rowsPerPage) {
+        $offset = $offset * $rowsPerPage;
         $query = "SELECT * FROM notes 
                  WHERE title LIKE ? OR description LIKE ? 
-                 ORDER BY created_at DESC";
+                 ORDER BY id DESC limit $offset,$rowsPerPage";
+
+        $numRows = $this->connection->query("SELECT * FROM notes WHERE title LIKE '%$searchTerm%' OR description LIKE '%$searchTerm%'");
+        $pages = ceil($numRows->num_rows / $rowsPerPage);
         
         $stmt = $this->connection->prepare($query);
         if (!$stmt) {
@@ -63,7 +70,7 @@ class NotesDatabase {
         }
         
         $stmt->close();
-        return $notes;
+        return ["notes"=>$notes,"pages"=>$pages];
     }
 
     
